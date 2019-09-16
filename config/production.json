@@ -1,0 +1,4 @@
+{
+  "DTO_JWT_PrivateKey": "",
+  "db": "mongodb://localhost/dto-be-prod"
+}

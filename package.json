@@ -1,0 +1,39 @@
+{
+  "name": "dtoaec-be-v0",
+  "version": "1.0.0",
+  "description": "D.TO AEC Backend V0",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --watchAll --detectOpenHandles --verbose --runInBand --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juhunlee-dto/dtoaec-be-v0.git"
+  },
+  "keywords": [],
+  "author": "Juhun Lee",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/juhunlee-dto/dtoaec-be-v0/issues"
+  },
+  "homepage": "https://github.com/juhunlee-dto/dtoaec-be-v0#readme",
+  "dependencies": {
+    "@types/node": "^12.7.5",
+    "config": "^3.2.2",
+    "debug": "^4.1.1",
+    "express": "^4.17.1",
+    "express-async-errors": "^3.1.1",
+    "helmet": "^3.21.0",
+    "joi": "^14.3.1",
+    "joi-objectid": "^2.0.0",
+    "joi-password-complexity": "^3.1.0",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.15",
+    "mongoose": "^5.7.1",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "supertest": "^4.0.2"
+  }
+}
