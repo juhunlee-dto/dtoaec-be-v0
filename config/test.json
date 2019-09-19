@@ -1,4 +1,4 @@
 {
   "DTO_JWT_PrivateKey": "dto-jwt-key",
-  "db": "mongodb://localhost/dto-be-dev"
+  "db": "mongodb://localhost/dto-be-test"
 }

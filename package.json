@@ -4,7 +4,7 @@
   "description": "D.TO AEC Backend V0",
   "main": "index.js",
   "scripts": {
-    "test": "jest --watchAll --detectOpenHandles --verbose --runInBand --coverage"
+    "test": "mocha 'test/**/**/*.js' --recursive --timeout 60000 --reporter spec --exit"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,7 @@
   "homepage": "https://github.com/juhunlee-dto/dtoaec-be-v0#readme",
   "dependencies": {
     "@types/node": "^12.7.5",
+    "bcrypt": "^3.0.6",
     "config": "^3.2.2",
     "debug": "^4.1.1",
     "express": "^4.17.1",
@@ -33,7 +34,8 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
-    "jest": "^24.9.0",
-    "supertest": "^4.0.2"
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "mocha": "^6.2.0"
   }
 }
