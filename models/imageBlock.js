@@ -1,12 +1,21 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
-const { ContentBlock, contentBlockSchemaOptions } = require("./contentBlock");
+const {
+  ContentBlock,
+  contentBlockSchemaOptions,
+  contentBlockJoiSchema
+} = require("./contentBlock");
 
 const ImageBlockSchema = new mongoose.Schema(
   {
     imageURL: {
       type: String,
+      required: true,
       min: 2
+    },
+    description: {
+      type: String,
+      default: ""
     }
   },
   contentBlockSchemaOptions
@@ -15,14 +24,15 @@ const ImageBlockSchema = new mongoose.Schema(
 const ImageBlock = ContentBlock.discriminator("ImageBlock", ImageBlockSchema);
 
 function validateImageBlock(obj) {
-  const schema = {
+  const schema = contentBlockJoiSchema.append({
     imageURL: Joi.string()
       .uri()
       .trim()
-      .required()
-  };
+      .required(),
+    description: Joi.string()
+  });
   return Joi.validate(obj, schema, {
-    allowUnknown: true
+    allowUnknown: false
   });
 }
 

@@ -11,11 +11,7 @@ module.exports = function(req, res, next) {
     winston.error(errMessage);
     return res.status(400).send(errMessage);
   }
-  const { error } = validateContentBlock(req.body);
-  if (error) {
-    winston.error(`Invalid Content Block: ${error.details[0].message}`);
-    return res.status(400).send(error.details[0].message);
-  }
+  let result;
   if (contentType === "Text") {
     result = validateTextBlock(req.body);
   } else if (contentType === "Image") {

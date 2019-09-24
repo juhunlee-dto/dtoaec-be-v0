@@ -1,8 +1,12 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
-const { ContentBlock, contentBlockSchemaOptions } = require("./contentBlock");
+const {
+  ContentBlock,
+  contentBlockSchemaOptions,
+  contentBlockJoiSchema
+} = require("./contentBlock");
 
-const TextBlockSchema = new mongoose.Schema(
+const textBlockSchema = new mongoose.Schema(
   {
     textContent: {
       type: String,
@@ -12,16 +16,16 @@ const TextBlockSchema = new mongoose.Schema(
   contentBlockSchemaOptions
 );
 
-const TextBlock = ContentBlock.discriminator("TextBlock", TextBlockSchema);
+const TextBlock = ContentBlock.discriminator("TextBlock", textBlockSchema);
 
 function validateTextBlock(obj) {
-  const schema = {
+  const schema = contentBlockJoiSchema.append({
     textContent: Joi.string()
       .min(2)
       .required()
-  };
+  });
   return Joi.validate(obj, schema, {
-    allowUnknown: true
+    allowUnknown: false
   });
 }
 

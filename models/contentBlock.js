@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
-const _ = require("lodash");
+const { userInteractionSchema } = require("./userInteraction");
 
 const contentBlockOptions = {
   discriminatorKey: "contentType",
   timestamps: true
 };
+
 const contentBlockSchema = new mongoose.Schema(
   {
     isPremium: {
@@ -13,10 +14,36 @@ const contentBlockSchema = new mongoose.Schema(
       default: false,
       required: true
     },
-    author: {
+    parent: {
       type: mongoose.SchemaTypes.ObjectId,
-      ref: "User",
+      ref: "Content",
       require: true
+    },
+    userInteractions: {
+      type: [userInteractionSchema],
+      default: []
+    },
+    metadata: {
+      usefulCount: {
+        type: Number,
+        default: 0
+      },
+      notUsefulCount: {
+        type: Number,
+        default: 0
+      },
+      viewCount: {
+        type: Number,
+        default: 0
+      },
+      premiumViewCount: {
+        type: Number,
+        default: 0
+      },
+      adsClickCount: {
+        type: Number,
+        default: 0
+      }
     }
   },
   contentBlockOptions
@@ -24,17 +51,13 @@ const contentBlockSchema = new mongoose.Schema(
 
 const ContentBlock = mongoose.model("ContentBlock", contentBlockSchema);
 
-function validateContentBlock(obj) {
-  const schema = {
-    author: Joi.objectId().required(),
-    isPremium: Joi.boolean().required(),
-    contentType: Joi.string().required()
-  };
-  return Joi.validate(obj, schema, {
-    allowUnknown: true
-  });
-}
+//no content id from req as it should be assigned in the server
+const joiSchema = Joi.object().keys({
+  isPremium: Joi.boolean().required(),
+  parent: Joi.objectId().required(),
+  contentType: Joi.string().required()
+});
 
-module.exports.validateContentBlock = validateContentBlock;
-module.exports.ContentBlockSchemaOptions = contentBlockOptions;
+module.exports.contentBlockJoiSchema = joiSchema;
+module.exports.contentBlockSchemaOptions = contentBlockOptions;
 module.exports.ContentBlock = ContentBlock;

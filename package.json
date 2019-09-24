@@ -4,7 +4,7 @@
   "description": "D.TO AEC Backend V0",
   "main": "index.js",
   "scripts": {
-    "test": "mocha 'test/**/**/*.js' --recursive --timeout 60000 --reporter spec --exit"
+    "test": "mocha 'test/**/**/*.js' -c true --timeout 60000 --reporter spec -exit"
   },
   "repository": {
     "type": "git",
@@ -36,6 +36,7 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
-    "mocha": "^6.2.0"
+    "mocha": "^6.2.0",
+    "nyc": "^14.1.1"
   }
 }

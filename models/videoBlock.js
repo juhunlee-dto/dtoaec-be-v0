@@ -1,12 +1,20 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
-const { ContentBlock, contentBlockSchemaOptions } = require("./contentBlock");
+const {
+  ContentBlock,
+  contentBlockSchemaOptions,
+  contentBlockJoiSchema
+} = require("./contentBlock");
 
 const VideoBlockSchema = new mongoose.Schema(
   {
     videoURL: {
       type: String,
       min: 2
+    },
+    description: {
+      type: String,
+      default: ""
     }
   },
   contentBlockSchemaOptions
@@ -15,14 +23,15 @@ const VideoBlockSchema = new mongoose.Schema(
 const VideoBlock = ContentBlock.discriminator("VideoBlock", VideoBlockSchema);
 
 function validateVideoBlock(obj) {
-  const schema = {
+  const schema = contentBlockJoiSchema.append({
     videoURL: Joi.string()
       .uri()
       .trim()
-      .required()
-  };
+      .required(),
+    description: Joi.string()
+  });
   return Joi.validate(obj, schema, {
-    allowUnknown: true
+    allowUnknown: false
   });
 }
 
