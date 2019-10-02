@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
+const { userInteractionSchema } = require("./userInteraction");
+const { opinionSchema, OpinionHandler } = require("./opinion");
 
 const contentOptions = {
   discriminatorKey: "contentType",
@@ -7,6 +9,7 @@ const contentOptions = {
 };
 const contentStatus = ["Editing", "Pending", "Published"];
 
+//RETHINK Content Block
 const contentSchema = new mongoose.Schema(
   {
     status: {
@@ -20,16 +23,22 @@ const contentSchema = new mongoose.Schema(
       ref: "User",
       require: true
     },
-    contentBlocks: {
-      type: [mongoose.SchemaTypes.ObjectId],
-      ref: "ContentBlock",
-      default: []
-    },
-    interactions: {
-      type: [mongoose.SchemaTypes.ObjectId],
-      ref: "UserInteraction",
-      default: []
-    },
+    contentBlocks: [
+      {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: "ContentBlock"
+      }
+    ],
+    opinions: [
+      {
+        type: opinionSchema
+      }
+    ],
+    interactions: [
+      {
+        type: userInteractionSchema
+      }
+    ],
     metadata: {
       usefulCount: {
         type: Number,
@@ -42,68 +51,61 @@ const contentSchema = new mongoose.Schema(
       viewCount: {
         type: Number,
         default: 0
+      },
+      anoViewCount: {
+        type: Number,
+        default: 0
       }
     }
   },
   contentOptions
 );
 
-contentSchema.methods.toJSON = function() {
+contentSchema.methods.toJsonSimple = function() {
   var obj = this.toObject();
   delete obj.opinions;
+  delete obj.interactions;
   return obj;
 };
 
-contentSchema.methods.updateMetadata = async function() {
-  const ints = await Content.find({ _id: { $in: this.interactions } });
-  for (let i of ints) {
+contentSchema.methods.interactedBy = function(user, type) {
+  this.interactions.push({
+    with: user._id,
+    withModel: "User",
+    type: type
+  });
+  this.updateMetadata(type);
+
+  user.interactions.push({
+    with: this._id,
+    withModel: this.constructor.modelName,
+    type: type
+  });
+  user.updateMetadata(type);
+};
+
+OpinionHandler(contentSchema);
+
+contentSchema.methods.updateMetadata = function(type, val = 1) {
+  if (type === "ContentView") {
+    this.metadata.viewCount += val;
+  } else if (type === "Useful") {
+    this.metadata.usefulCount += val;
+  } else if (type === "NotUseful") {
+    this.metadata.notUsefulCount += val;
   }
-  //too expensive
 };
 
 const Content = mongoose.model("Content", contentSchema);
 
 //only validate req from client
-const joiSchema = {
+const joiSchema = Joi.object().keys({
   status: Joi.string()
     .required()
     .valid(contentStatus)
-    .default("Editing"),
-  author: Joi.objectId().required()
-};
+    .default("Editing")
+});
 
 module.exports.contentJoiSchema = joiSchema;
 module.exports.contentSchemaOptions = contentOptions;
 module.exports.Content = Content;
-
-// contentSchema.methods.opinionIndexOf = function(req) {
-//   const user_m_id = mongoose.Types.ObjectId(req.user._id);
-//   return _.findIndex(this.opinions, ["user", user_m_id]);
-// };
-
-// contentSchema.methods.isOpinionIdentical = function(index, req) {
-//   return this.opinions[index].opinion === req.body.opinion;
-// };
-
-// contentSchema.methods.setOpinion = function(req) {
-//   this.opinions.push({
-//     user: mongoose.Types.ObjectId(req.user._id),
-//     opinion: req.body.opinion
-//   });
-//   this.updateOpinionMetadata(req.body.opinion);
-// };
-
-// contentSchema.methods.updateOpinion = function(index, req) {
-//   this.opinions[index].opinion = req.body.opinion;
-//   this.updateOpinionMetadata(req.body.opinion);
-// };
-
-// contentSchema.methods.updateOpinionMetadata = function() {
-//   this.metadata.usefulCount = 0;
-//   this.metadata.notUsefulCount = 0;
-//   for (let i = 0; i < this.opinions.length; ++i) {
-//     const o = this.opinions[i];
-//     if (o.opinion === "Useful") this.metadata.usefulCount++;
-//     else if (o.opinion === "NotUseful") this.metadata.notUsefulCount++;
-//   }
-// };

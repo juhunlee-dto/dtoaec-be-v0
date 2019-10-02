@@ -1,24 +1,23 @@
 const LoremIpsum = require("./loremIpsum");
 const { User } = require("./../models/user");
 const { TextBlock } = require("./../models/textBlock");
-const { UserInteraction } = require("./../models/userInteraction");
+const { ImageBlock } = require("./../models/imageBlock");
 
 module.exports = class ContentGenerator {
-  generateUserReq(appendix, isAdmin = false) {
+  generateUserReq(appendix) {
     return {
       firstName: "firstName_" + appendix,
       lastName: "lastName_" + appendix,
       email: "dto_user" + appendix + "@dto.com",
-      password: "1234!@#$QWERqwer",
-      isAdmin: isAdmin
+      password: "1234!@#$QWERqwer"
     };
   }
 
-  generateUserModel(appendix, isAdmin = false) {
-    return new User(this.generateUserReq(appendix, isAdmin));
+  generateUserModel(appendix) {
+    return new User(this.generateUserReq(appendix));
   }
 
-  generateArticleReq(authorId_Str) {
+  generateArticleBase(authorId_Str) {
     return {
       title: "This is a great test article title",
       subTitle: "The amazing way of testing node.js app",
@@ -27,32 +26,49 @@ module.exports = class ContentGenerator {
     };
   }
 
-  generateUserInteractionReq(type, contentIdStr, contentType) {
+  generateUserInteractionReq(withId, withType, intType) {
     return {
-      interactionType: type,
-      interactedWith: contentIdStr,
-      interactedWithType: contentType
+      with: withId,
+      withModel: withType,
+      type: intType
     };
-  }
-
-  generateUserInteractionModel(userIdStr, type, contentIdStr, contentType) {
-    let int = this.generateUserInteractionReq(type, contentIdStr, contentType);
-    int.user = userIdStr;
-    return new UserInteraction(int);
   }
 
   generateTextBlockReq(parentIdStr, numOfParagraphs = 1, isPremium = false) {
     return {
       parent: parentIdStr,
       isPremium: isPremium,
-      contentType: "Text",
+      contentType: "TextBlock",
       textContent: LoremIpsum(numOfParagraphs)
     };
   }
 
-  generateTextBlockModel(parentIdStr, numOfParagraphs = 1, isPremium = false) {
+  generateTextBlockModel(
+    authorIdStr,
+    parentIdStr,
+    numOfParagraphs = 1,
+    isPremium = false
+  ) {
     let tx = this.generateTextBlockReq(parentIdStr, numOfParagraphs, isPremium);
+    tx.author = authorIdStr;
     return new TextBlock(tx);
+  }
+
+  generateImageBlockReq(parentIdStr, isPremium = false) {
+    return {
+      parent: parentIdStr,
+      isPremium: isPremium,
+      contentType: "ImageBlock",
+      imageURL:
+        "https://drive.google.com/file/d/1jn2r4tSNU9sVSCmF4UIdEtBjTcrGCIll/view",
+      description: "D.TO Logo by Juhun Lee"
+    };
+  }
+
+  generateImageBlockModel(authorIdStr, parentIdStr, isPremium = false) {
+    const img = this.generateImageBlockReq(parentIdStr, isPremium);
+    img.author = authorIdStr;
+    return new ImageBlock(img);
   }
 };
 

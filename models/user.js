@@ -4,6 +4,7 @@ const config = require("config");
 const Joi = require("joi");
 const PasswordComplexity = require("joi-password-complexity");
 const bcrypt = require("bcrypt");
+const { userInteractionSchema } = require("./userInteraction");
 
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -34,6 +35,24 @@ const userSchema = new mongoose.Schema({
   isAdmin: {
     type: Boolean,
     default: false
+  },
+  interactions: {
+    type: [userInteractionSchema],
+    default: []
+  },
+  metadata: {
+    contentViewCount: {
+      type: Number,
+      default: 0
+    },
+    premiumViewCount: {
+      type: Number,
+      default: 0
+    },
+    adsClickCount: {
+      type: Number,
+      default: 0
+    }
   }
 });
 
@@ -49,6 +68,35 @@ userSchema.methods.encryptPassword = async function() {
   this.password = await bcrypt.hash(this.password, salt);
 };
 
+userSchema.methods.interactWith = function(content, type) {
+  this.interactions.push({
+    with: content._id,
+    withModel: content.constructor.modelName,
+    type: type
+  });
+  this.updateMetadata(type);
+
+  content.interactions.push({
+    with: this._id,
+    withModel: "User",
+    type: type
+  });
+  content.updateMetadata(type);
+};
+
+userSchema.methods.updateMetadata = function(type) {
+  if (type === "ContentView") {
+    this.metadata.contentViewCount++;
+  } else if (type === "PremiumView") {
+    this.metadata.contentViewCount++; //??
+    this.metadata.premiumViewCount++;
+  } else if (type === "AdsClick") {
+    this.metadata.adsClickCount++;
+  }
+};
+
+const User = mongoose.model("User", userSchema);
+
 function getUserPasswordComplexityOptions() {
   return {
     min: 8,
@@ -60,8 +108,6 @@ function getUserPasswordComplexityOptions() {
     requirementCount: 3
   };
 }
-
-const User = mongoose.model("User", userSchema);
 
 function validateUser(user) {
   const complexityOptions = getUserPasswordComplexityOptions();
@@ -80,8 +126,7 @@ function validateUser(user) {
       .min(5)
       .max(50)
       .email(),
-    password: new PasswordComplexity(complexityOptions).required(),
-    isAdmin: Joi.boolean()
+    password: new PasswordComplexity(complexityOptions).required()
   };
   return Joi.validate(user, schema);
 }

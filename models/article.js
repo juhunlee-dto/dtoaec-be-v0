@@ -11,7 +11,7 @@ const articleSchema = new mongoose.Schema(
     title: {
       type: String,
       max: 300,
-      default: ""
+      default: "Untitled"
     },
     subTitle: {
       type: String,
@@ -30,7 +30,7 @@ function validateArticle(obj) {
     title: Joi.string()
       .allow("")
       .max(300)
-      .default(""),
+      .default("Untitled"),
     subTitle: Joi.string()
       .allow("")
       .max(500)

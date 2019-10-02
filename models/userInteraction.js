@@ -1,66 +1,33 @@
 const mongoose = require("mongoose");
-const Joi = require("joi");
-
-const userInteractionTypes = [
-  "ContentView",
-  "Useful",
-  "NotUseful",
-  "PremiumView",
-  "AdsClick"
-];
 
 //make sure this is one of model name
-const interactedContentTypes = ["Article"];
+const withModels = ["User", "Article", "TextBlock", "ImageBlock", "VideoBlock"];
+
+const types = ["ContentView", "PremiumView", "AdsClick"];
 
 const userInteractionSchema = new mongoose.Schema(
   {
-    user: {
+    with: {
       type: mongoose.SchemaTypes.ObjectId,
       required: true,
-      ref: "User"
+      refPath: "interactions.withModel"
     },
-    interactionType: {
+    withModel: {
       type: String,
       required: true,
-      enum: userInteractionTypes
+      enum: withModels
     },
-    interactedWith: {
-      type: mongoose.SchemaTypes.ObjectId,
-      required: true
-    },
-    interactedWithType: {
+    type: {
       type: String,
       required: true,
-      enum: interactedContentTypes
+      enum: types
     },
     metadata: {}
   },
-  { timestamps: true }
+  { timestamps: true, _id: false }
 );
 
-function validateUserInteraction(obj) {
-  const schema = {
-    interactionType: Joi.string()
-      .required()
-      .valid(userInteractionTypes),
-    interactedWith: Joi.ObjectId().required(),
-    interactedWithType: Joi.string()
-      .required()
-      .valid(interactedContentTypes)
-  };
-  return Joi.validate(obj, schema, {
-    allowUnknown: false
-  });
-}
-
-const UserInteraction = mongoose.model(
-  "UserInteraction",
-  userInteractionSchema
-);
-
-module.exports.userInteractionTypes = userInteractionTypes;
-module.exports.UserInteraction = UserInteraction;
-module.exports.validateUserInteraction = validateUserInteraction;
+module.exports.userInteractionSchema = userInteractionSchema;
 
 //UserInteraction
 //1. content view

@@ -17,9 +17,7 @@ module.exports = function() {
         format: "YYYY/MM/DD HH:mm:ss"
       }),
       winston.format.json(),
-      winston.format.printf(
-        info => `${info.timestamp}: ${info.level}: ${info.message}`
-      )
+      winston.format.printf(info => `        - ${info.level}: ${info.message}`)
     )
   };
 

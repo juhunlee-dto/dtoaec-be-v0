@@ -15,6 +15,7 @@ const textBlockSchema = new mongoose.Schema(
   },
   contentBlockSchemaOptions
 );
+//need contentblock option??
 
 const TextBlock = ContentBlock.discriminator("TextBlock", textBlockSchema);
 

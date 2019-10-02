@@ -14,7 +14,7 @@ const loremIpsum = [
 
 module.exports = function(numOfParagraph, asArray = false) {
   if (numOfParagraph > loremIpsum.length) numOfParagraph = loremIpsum.length;
-  const arr = _.slice(loremIpsum, 0, numOfParagraph - 1);
+  const arr = _.slice(loremIpsum, 0, numOfParagraph);
   if (asArray) return arr;
   else return _.join(arr, "\n"); //is this enough?
 };

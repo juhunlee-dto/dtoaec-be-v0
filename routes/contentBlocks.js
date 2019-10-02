@@ -10,8 +10,18 @@ const { ImageBlock } = require("../models/imageBlock");
 const { VideoBlock } = require("../models/videoBlock");
 const _ = require("lodash");
 
-router.post("/", [auth], async (req, res) => {
-  return res.status(200).send("ok");
+router.post("/", [auth, validateContentBlock], async (req, res) => {
+  //get article
+  //add conBlock
+  req.body.author = req.user._id;
+  const conBlock = new ContentBlock(req.body);
+  await conBlock.save();
+  await conBlock
+    .populate({
+      path: "parent"
+    })
+    .execPopulate();
+  return res.status(200).send(conBlock);
 });
 
 // router.post("/", [auth, validateContentBlock], async (req, res) => {
@@ -32,19 +42,3 @@ router.post("/", [auth], async (req, res) => {
 // });
 
 module.exports = router;
-
-function getCorrectContentBlock(req) {
-  const { contentType } = req.body;
-  const obj = _.omit(req.body, ["contentType"]);
-  if (!contentType) return null;
-
-  let contentBlock;
-  if (contentType === "Text") {
-    contentBlock = new TextBlock(obj);
-  } else if (contentType === "Image") {
-    contentBlock = new ImageBlock(obj);
-  } else if (contentType === "Video") {
-    contentBlock = new VideoBlock(obj);
-  }
-  return contentBlock;
-}
