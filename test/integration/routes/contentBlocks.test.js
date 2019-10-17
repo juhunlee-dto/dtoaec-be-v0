@@ -124,13 +124,150 @@ describe("CRUD Ops ContentBlock/ ~api/contentBlocks/", () => {
       await genUsersDB(1, 2);
       await genArticleDB(authors_db[0]);
       token_user = authors_token[0];
-      body = contGen.generateTextBlockReq(article._id.toHexString(), 1, true);
-      //body = contGen.generateImageBlockReq(article._id.toHexString(), true);
+      body = contGen.generateTextBlockReq(article._id.toHexString(), 1, false);
     });
 
-    it("should return 200 and save a text block with a valid request", async () => {
+    it("should return 200 and save a text block with a valid request 1", async () => {
       const res = await execute();
-      res.should.have.status(200);
+      expect(res).to.have.status(200);
+      expect(res.body).to.have.property("textContent", body.textContent);
+      expect(res.body).to.have.property("isPremium", false);
+      const a = await Article.findById(article._id);
+      expect(a).to.have.property("contentBlocks");
+      const cbs = a.contentBlocks;
+      expect(cbs).to.have.lengthOf(1);
+      const txb = await ContentBlock.findById(cbs[0]);
+      expect(txb).to.have.property("textContent", body.textContent);
+      expect(txb).to.have.property("isPremium", false);
+    });
+
+    it("should return 200 and save an image block with a valid request 1", async () => {
+      body = contGen.generateImageBlockReq(article._id.toHexString(), true);
+      const res = await execute();
+      expect(res).to.have.status(200);
+      expect(res.body).to.have.property("imageURL", body.imageURL);
+      expect(res.body).to.have.property("isPremium", true);
+      const a = await Article.findById(article._id);
+      expect(a).to.have.property("contentBlocks");
+      const cbs = a.contentBlocks;
+      expect(cbs).to.have.lengthOf(1);
+      const txb = await ContentBlock.findById(cbs[0]);
+      expect(txb).to.have.property("imageURL", body.imageURL);
+      expect(txb).to.have.property("isPremium", true);
+    });
+
+    it("should return 200 and save a text block with a valid request 2", async () => {
+      await appendContentBlocksDB(authors_db[0], readers_db[0], readers_db[1]);
+      const res = await execute();
+      expect(res).to.have.status(200);
+      expect(res.body).to.have.property("textContent", body.textContent);
+      expect(res.body).to.have.property("isPremium", false);
+      const a = await Article.findById(article._id);
+      expect(a).to.have.property("contentBlocks");
+      const cbs = a.contentBlocks;
+      expect(cbs).to.have.lengthOf(4);
+      const txb = await ContentBlock.findById(cbs[cbs.length - 1]);
+      expect(txb).to.have.property("textContent", body.textContent);
+      expect(txb).to.have.property("isPremium", false);
+    });
+
+    it("should return 400 with an invalid request 1", async () => {
+      body = null;
+      const res = await execute();
+      expect(res).to.have.status(400);
+    });
+
+    it("should return 400 with an invalid request 2", async () => {
+      delete body.parent;
+      const res = await execute();
+      expect(res).to.have.status(400);
+    });
+
+    it("should return 400 with an invalid request 3", async () => {
+      body.like = 100;
+      const res = await execute();
+      expect(res).to.have.status(400);
+    });
+
+    it("should return 400 with an invalid request 4", async () => {
+      body.metadata = {
+        usefulCount: 1000,
+        viewCount: 1000
+      };
+      const res = await execute();
+      expect(res).to.have.status(400);
+    });
+
+    it("should return 400 with an invalid request 5", async () => {
+      body.opinions = [
+        {
+          by: authors_db[0]._id.toHexString(),
+          opinion: "Useful",
+          comment: "Great"
+        }
+      ];
+      const res = await execute();
+      expect(res).to.have.status(400);
+    });
+
+    it("should return 400 with invalid token", async () => {
+      token_user = "asdfas32gsdx";
+      const res = await execute();
+      expect(res).to.have.status(400);
+    });
+
+    it("should return 401 if user is not logged in", async () => {
+      token_user = "";
+      const res = await execute();
+      res.should.have.status(401);
+    });
+
+    it("should return 403 if user is not the author", async () => {
+      token_user = readers_token[0];
+      const res = await execute();
+      res.should.have.status(403);
+    });
+
+    it("should return 404 if no content found", async () => {
+      body.parent = mongoose.Types.ObjectId().toHexString();
+      const res = await execute();
+      expect(res).to.have.status(404);
+    });
+  });
+
+  describe("Put ContentBlock ~/id", () => {
+    let token_user;
+    let param;
+    let body = undefined;
+    const execute = () => {
+      return chai
+        .request(server)
+        .put(`/api/contentBlocks/${param}`)
+        .set("x-auth-token", token_user)
+        .send(body);
+    };
+
+    beforeEach(async () => {
+      await genUsersDB(1, 2);
+      await genArticleDB(authors_db[0]);
+      token_user = authors_token[0];
+      await appendContentBlocksDB(authors_db[0], readers_db[0], readers_db[1]);
+      param = article.contentBlocks[0].toHexString();
+      body = {
+        parent: article._id.toHexString(),
+        isPremium: true,
+        contentType: "TextBlock",
+        textContent: "New text content here!"
+      };
+    });
+
+    it("should return 200 and update content block 1", async () => {
+      const res = await execute();
+      expect(res).to.have.status(200);
+      expect(res.body).to.have.property("isPremium", body.isPremium);
+      expect(res.body).to.have.property("textContent", body.textContent);
+      //changing premium...what to update????
+      //
     });
   });
 });
